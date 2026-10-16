@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>a little place for you ♡</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel standalone for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #faf6f0;
+            color: #5c4738;
+            overflow-x: hidden;
+        }
+        .font-handwriting {
+            font-family: 'Caveat', cursive;
+        }
+        .font-serif-title {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #faf6f0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e2c2b3;
+            border-radius: 4px;
+        }
+        /* Washi tape effect */
+        .washi-tape {
+            background: rgba(243, 198, 189, 0.65);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            backdrop-filter: blur(1px);
+        }
+        /* Paper shadow */
+        .paper-shadow {
+            box-shadow: 3px 4px 15px rgba(92, 71, 56, 0.08), 0 1px 3px rgba(0,0,0,0.05);
+        }
+        /* Option wrong shrink animation */
+        .option-wrong {
+            transform: scale(0);
+            opacity: 0;
+            max-height: 0px !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            border: none !important;
+            overflow: hidden;
+            pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-normal {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // CONFIGURABLE CONTENT
+        const CONFIG = {
+            recipientName: "Kamu",
+            senderName: "Aku yang selalu mendukungmu",
+            letterContent: `Haii, kamu! ♡
+
+Selamat National Couple Day! 💖
+
+Aku bikin website kecil ini khusus buat kamu. Mungkin kelihatannya sederhana, tapi aku pengin ada sesuatu yang bisa kamu buka kapan aja, terutama pas lagi capek atau butuh hiburan kecil.
+
+Makasih ya udah jadi diri kamu sendiri dan selalu nemenin hari-hariku. Semoga hari-hari kamu ke depannya dipenuhi hal-hal baik, orang-orang yang tulus, dan banyak alasan buat senyum.
+
+Kalau hari ini terasa berat, nggak apa-apa buat istirahat sebentar. Kamu nggak harus selalu kuat setiap waktu.
+
+Pokoknya, semoga website kecil ini berhasil bikin kamu senyum, walaupun cuma sebentar. Happy National Couple Day!
+
+Jangan lupa jaga diri baik-baik, ya.`,
+            quizQuestions: [
+                {
+                    id: 1,
+                    question: "Kalau aku lagi bad mood, biasanya aku paling butuh apa?",
+                    options: [
+                        { text: "Dimarahin balik", isCorrect: false },
+                        { text: "Makan manis / camilan manis 🍦", isCorrect: true },
+                        { text: "Ditinggal sendirian seharian", isCorrect: false },
+                        { text: "Disuruh olahraga marathon", isCorrect: false }
+                    ]
+                },
+                {
+                    id: 2,
+                    question: "Kalau lagi waktu luang, kegiatan yang paling aku suka:",
+                    options: [
+                        { text: "Nonton film / series 🎬", isCorrect: true },
+                        { text: "Nghitung jumlah rumput", isCorrect: false },
+                        { text: "Tidur 24 jam penuh", isCorrect: false },
+                        { text: "Mikirin fisika kuantum", isCorrect: false }
+                    ]
+                },
+                {
+                    id: 3,
+                    question: "Hal kecil apa yang paling gampang bikin aku senang seharian?",
+                    options: [
+                        { text: "Dapat foto / pap dari kamu 📸", isCorrect: true },
+                        { text: "Dapet piring cantik", isCorrect: false },
+                        { text: "Melihat macet di jalan", isCorrect: false },
+                        { text: "Kejatuhan daun kering", isCorrect: false }
+                    ]
+                },
+                {
+                    id: 4,
+                    question: "Pemandangan atau momen apa yang selalu sukses bikin tenang?",
+                    options: [
+                        { text: "Antrean kasir panjang", isCorrect: false },
+                        { text: "Suara klakson mobil", isCorrect: false },
+                        { text: "Pemandangan langit sore / sunset 🌅", isCorrect: true },
+                        { text: "Lampu merah 5 menit", isCorrect: false }
+                    ]
+                }
+            ],
+            surprises: [
+                { id: 1, title: "Amplop #1", icon: "🎁", text: "Jangan lupa, kamu lebih hebat daripada yang kamu kira. Tetap semangat ya!" },
+                { id: 2, title: "Amplop #2", icon: "✨", text: "Semoga hari ini dan besok ada sesuatu manis yang bikin kamu senyum lebar! 💕" },
+                { id: 3, title: "Amplop #3", icon: "🤗", text: "Selamat! Kamu baru saja mendapatkan pelukan virtual hangat dari jauh. You're loved!" }
+            ],
+            secretMessage: `Yeay! Kamu berhasil membuka Sudut Rahasia National Couple Day! ♡
+
+Sudut kecil ini khusus dibuat untuk merayakan keberadaanmu. Apa pun yang sedang kamu hadapi hari ini, ingatlah bahwa kamu pantas mendapatkan kebaikan, kebahagiaan, dan kasih sayang yang tulus.
+
+Terima kasih sudah menjadi bagian terindah dan membuat hari-hari jadi jauh lebih hangat dan berwarna! Happy National Couple Day ✨`
+        };
+
+        // Sound Synthesizer via Web Audio API
+        const createSound = () => {
+            let audioCtx = null;
+            const initCtx = () => {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            };
+            return {
+                pop: () => {
+                    try {
+                        initCtx();
+                        if (audioCtx.state === 'suspended') audioCtx.resume();
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.08);
+                        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + 0.08);
+                    } catch(e){}
+                },
+                chime: () => {
+                    try {
+                        initCtx();
+                        if (audioCtx.state === 'suspended') audioCtx.resume();
+                        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = 'triangle';
+                            osc.frequency.value = freq;
+                            gain.gain.setValueAtTime(0.08, audioCtx.currentTime + idx * 0.08);
+                            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.08 + 0.4);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(audioCtx.currentTime + idx * 0.08);
+                            osc.stop(audioCtx.currentTime + idx * 0.08 + 0.4);
+                        });
+                    } catch(e){}
+                },
+                win: () => {
+                    try {
+                        initCtx();
+                        if (audioCtx.state === 'suspended') audioCtx.resume();
+                        [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.value = freq;
+                            gain.gain.setValueAtTime(0.12, audioCtx.currentTime + idx * 0.1);
+                            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.1 + 0.5);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(audioCtx.currentTime + idx * 0.1);
+                            osc.stop(audioCtx.currentTime + idx * 0.1 + 0.5);
+                        });
+                    } catch(e){}
+                }
+            };
+        };
+
+        const soundEffects = createSound();
+
+        function App() {
+            const [currentPage, setCurrentPage] = useState('welcome'); // welcome, home
+            const [activeTab, setActiveTab] = useState('surat'); // surat, games, rahasia
+            const [soundEnabled, setSoundEnabled] = useState(true);
+
+            // Progress Tracking
+            const [hasReadLetter, setHasReadLetter] = useState(() => {
+                return localStorage.getItem('hasReadLetter') === 'true';
+            });
+            const [hasPlayedGame, setHasPlayedGame] = useState(() => {
+                return localStorage.getItem('hasPlayedGame') === 'true';
+            });
+
+            // Letter State
+            const [isLetterOpen, setIsLetterOpen] = useState(false);
+
+            // Games State
+            const [activeGame, setActiveGame] = useState(null); // catch, quiz, surprise
+
+            // Catch Heart Game State
+            const [gameScore, setGameScore] = useState(0);
+            const [gameTime, setGameTime] = useState(30);
+            const [isGameRunning, setIsGameRunning] = useState(false);
+            const [heartPosition, setHeartPosition] = useState({ top: 50, left: 50 });
+            const [gameEnded, setGameEnded] = useState(false);
+
+            // Quiz State
+            const [quizIndex, setQuizIndex] = useState(0);
+            const [selectedWrongOptions, setSelectedWrongOptions] = useState([]);
+            const [quizCompleted, setQuizCompleted] = useState(false);
+
+            // Surprise Box State
+            const [selectedSurprise, setSelectedSurprise] = useState(null);
+
+            const playSound = (type) => {
+                if (!soundEnabled) return;
+                if (type === 'pop') soundEffects.pop();
+                if (type === 'chime') soundEffects.chime();
+                if (type === 'win') soundEffects.win();
+            };
+
+            const markLetterRead = () => {
+                setHasReadLetter(true);
+                localStorage.setItem('hasReadLetter', 'true');
+            };
+
+            const markGamePlayed = () => {
+                setHasPlayedGame(true);
+                localStorage.setItem('hasPlayedGame', 'true');
+            };
+
+            // Catch Heart Game Timer
+            useEffect(() => {
+                let timer;
+                if (isGameRunning && gameTime > 0) {
+                    timer = setInterval(() => {
+                        setGameTime(prev => prev - 1);
+                    }, 1000);
+                } else if (gameTime === 0 && isGameRunning) {
+                    setIsGameRunning(false);
+                    setGameEnded(true);
+                    markGamePlayed();
+                    playSound('win');
+                }
+                return () => clearInterval(timer);
+            }, [isGameRunning, gameTime]);
+
+            const startCatchGame = () => {
+                setGameScore(0);
+                setGameTime(30);
+                setGameEnded(false);
+                setIsGameRunning(true);
+                moveHeart();
+                playSound('pop');
+            };
+
+            const moveHeart = () => {
+                const newTop = Math.floor(Math.random() * 70) + 15;
+                const newLeft = Math.floor(Math.random() * 70) + 15;
+                setHeartPosition({ top: newTop, left: newLeft });
+            };
+
+            const handleCatchHeart = () => {
+                if (!isGameRunning) return;
+                setGameScore(prev => prev + 1);
+                moveHeart();
+                playSound('pop');
+            };
+
+            // Quiz Handler
+            const handleQuizOptionClick = (option) => {
+                if (option.isCorrect) {
+                    playSound('chime');
+                    if (quizIndex + 1 < CONFIG.quizQuestions.length) {
+                        setTimeout(() => {
+                            setQuizIndex(prev => prev + 1);
+                            setSelectedWrongOptions([]);
+                        }, 500);
+                    } else {
+                        setTimeout(() => {
+                            setQuizCompleted(true);
+                            markGamePlayed();
+                            playSound('win');
+                        }, 500);
+                    }
+                } else {
+                    playSound('pop');
+                    if (!selectedWrongOptions.includes(option.text)) {
+                        setSelectedWrongOptions(prev => [...prev, option.text]);
+                    }
+                }
+            };
+
+            const resetQuiz = () => {
+                setQuizIndex(0);
+                setSelectedWrongOptions([]);
+                setQuizCompleted(false);
+            };
+
+            // Reset All Progress
+            const resetAllProgress = () => {
+                localStorage.removeItem('hasReadLetter');
+                localStorage.removeItem('hasPlayedGame');
+                setHasReadLetter(false);
+                setHasPlayedGame(false);
+                setIsLetterOpen(false);
+                resetQuiz();
+                setGameEnded(false);
+                setIsGameRunning(false);
+                setSelectedSurprise(null);
+                playSound('pop');
+            };
+
+            const triggerConfetti = () => {
+                if (window.confetti) {
+                    window.confetti({
+                        particleCount: 80,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+                }
+            };
+
+            const isSecretUnlocked = hasReadLetter && hasPlayedGame;
+
+            return (
+                <div className="min-h-screen bg-[#faf6f0] text-[#5c4738] relative flex flex-col justify-between selection:bg-[#f3c6bd] selection:text-[#5c4738]">
+                    
+                    {/* Top Sound Toggle */}
+                    <div className="fixed top-4 right-4 z-50">
+                        <button 
+                            onClick={() => setSoundEnabled(!soundEnabled)}
+                            className="bg-white/80 backdrop-blur border border-[#e8d5c8] px-3 py-1.5 rounded-full shadow-sm hover:shadow text-xs font-semibold flex items-center gap-1.5 transition"
+                        >
+                            <span>{soundEnabled ? "🔊 Suara ON" : "🔇 Suara OFF"}</span>
+                        </button>
+                    </div>
+
+                    {/* WELCOME SCREEN */}
+                    {currentPage === 'welcome' && (
+                        <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+                            {/* Decorative Floating Hearts */}
+                            <div className="absolute top-12 left-10 text-2xl animate-bounce">✨</div>
+                            <div className="absolute bottom-16 right-12 text-3xl animate-pulse">💖</div>
+                            <div className="absolute top-1/4 right-1/6 text-xl opacity-60">🌸</div>
+                            <div className="absolute bottom-1/4 left-1/8 text-2xl opacity-60">🎀</div>
+
+                            {/* Scrapbook Envelope Card */}
+                            <div className="bg-[#fffdfa] border-2 border-[#e8d5c8] rounded-2xl p-8 max-w-md w-full paper-shadow relative transform rotate-1 transition hover:rotate-0 duration-300">
+                                <div className="washi-tape absolute -top-3 left-1/2 -translate-x-1/2 w-28 h-6 rounded-sm rotate-1"></div>
+                                
+                                <div className="text-4xl mb-4">💌</div>
+                                <h1 className="font-handwriting text-4xl font-bold text-[#8c4351] mb-2">
+                                    heyy, kamu! ♡
+                                </h1>
+                                <p className="text-sm text-[#7a6252] mb-6 leading-relaxed">
+                                    Aku bikin sesuatu yang kecil buat kamu. Coba buka dan lihat isinya, ya.
+                                </p>
+
+                                <button
+                                    onClick={() => {
+                                        playSound('chime');
+                                        setCurrentPage('home');
+                                    }}
+                                    className="w-full bg-[#8c4351] hover:bg-[#72323f] text-white font-semibold py-3 px-6 rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-2"
+                                >
+                                    <span>Buka dunia kecil ini</span>
+                                    <span>→</span>
+                                </button>
+                            </div>
+                            <p className="mt-8 text-xs text-[#a38c7a] font-handwriting text-lg">a little place for you ♡</p>
+                        </div>
+                    )}
+
+                    {/* MAIN HOME DASHBOARD */}
+                    {currentPage === 'home' && (
+                        <div className="max-w-2xl mx-auto w-full px-4 py-8 flex-1 flex flex-col">
+                            
+                            {/* Header Banner */}
+                            <header className="text-center mb-8 relative">
+                                <div className="inline-block relative">
+                                    <h1 className="font-handwriting text-4xl sm:text-5xl font-bold text-[#8c4351] mb-1">
+                                        a little place for you ♡
+                                    </h1>
+                                    <p className="text-xs sm:text-sm text-[#8c7462]">
+                                        Ruang kecil yang dibuat dengan hangat untukmu✨
+                                    </p>
+                                </div>
+                            </header>
+
+                            {/* Navigation Tabs */}
+                            <nav className="flex justify-center gap-2 mb-8 bg-[#f0e4d8]/60 p-1.5 rounded-2xl border border-[#e2c2b3]/50">
+                                <button
+                                    onClick={() => { setActiveTab('surat'); playSound('pop'); }}
+                                    className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition ${activeTab === 'surat' ? 'bg-[#fffdfa] text-[#8c4351] shadow-sm' : 'text-[#8c7462] hover:text-[#5c4738]'}`}
+                                >
+                                    💌 Surat Untukmu
+                                </button>
+                                <button
+                                    onClick={() => { setActiveTab('games'); playSound('pop'); }}
+                                    className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition ${activeTab === 'games' ? 'bg-[#fffdfa] text-[#8c4351] shadow-sm' : 'text-[#8c7462] hover:text-[#5c4738]'}`}
+                                >
+                                    🎮 Ayo Bermain
+                                </button>
+                                <button
+                                    onClick={() => { setActiveTab('rahasia'); playSound('pop'); }}
+                                    className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition relative ${activeTab === 'rahasia' ? 'bg-[#fffdfa] text-[#8c4351] shadow-sm' : 'text-[#8c7462] hover:text-[#5c4738]'}`}
+                                >
+                                    🔒 Sudut Rahasia
+                                    {!isSecretUnlocked && (
+                                        <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+                                        </span>
+                                    )}
+                                </button>
+                            </nav>
+
+                            {/* TAB 1: SURAT UNTUKMU */}
+                            {activeTab === 'surat' && (
+                                <div className="flex-1 flex flex-col items-center justify-center">
+                                    {!isLetterOpen ? (
+                                        <div className="bg-[#fffdfa] border-2 border-[#e8d5c8] rounded-2xl p-8 max-w-md w-full text-center paper-shadow relative transform hover:-translate-y-1 transition duration-300">
+                                            <div className="washi-tape absolute -top-3 left-1/2 -translate-x-1/2 w-32 h-6 rounded-sm"></div>
+                                            <div className="text-5xl mb-4 animate-pulse">📮</div>
+                                            <h2 className="font-serif-title text-xl font-bold text-[#8c4351] mb-2">
+                                                Ada sesuatu buat kamu ♡
+                                            </h2>
+                                            <p className="text-xs text-[#8c7462] mb-6">
+                                                Sebuah pesan khusus bertema National Couple Day
+                                            </p>
+                                            <button
+                                                onClick={() => {
+                                                    setIsLetterOpen(true);
+                                                    markLetterRead();
+                                                    playSound('chime');
+                                                }}
+                                                className="bg-[#8c4351] hover:bg-[#72323f] text-white font-semibold py-2.5 px-6 rounded-xl shadow transition active:scale-95 text-sm"
+                                            >
+                                                Buka Suratnya ✨
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-[#fffefb] border-2 border-[#e2c2b3] rounded-2xl p-6 sm:p-8 max-w-lg w-full paper-shadow relative animate-fade-in">
+                                            <div className="washi-tape absolute -top-3 left-8 w-24 h-5 rounded-sm -rotate-2"></div>
+                                            <div className="washi-tape absolute -top-3 right-8 w-24 h-5 rounded-sm rotate-2"></div>
+                                            
+                                            <div className="flex justify-between items-center border-b border-[#f0dcd0] pb-3 mb-4">
+                                                <span className="font-handwriting text-2xl font-bold text-[#8c4351]">National Couple Day Letter 💖</span>
+                                                <button 
+                                                    onClick={() => { setIsLetterOpen(false); playSound('pop'); }}
+                                                    className="text-xs bg-[#f4e6dd] hover:bg-[#e8d5c8] text-[#5c4738] px-2.5 py-1 rounded-md transition"
+                                                >
+                                                    Tutup ✕
+                                                </button>
+                                            </div>
+
+                                            <div className="text-sm text-[#5c4738] leading-relaxed whitespace-pre-line font-sans mb-6">
+                                                {CONFIG.letterContent}
+                                            </div>
+
+                                            <div className="border-t border-[#f0dcd0] pt-3 text-right">
+                                                <p className="font-handwriting text-xl text-[#8c4351]">
+                                                    — {CONFIG.senderName} ♡
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* TAB 2: AYO BERMAIN */}
+                            {activeTab === 'games' && (
+                                <div className="space-y-6">
+                                    {!activeGame ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                            {/* Game 1 Card */}
+                                            <button
+                                                onClick={() => { setActiveGame('catch'); playSound('pop'); }}
+                                                className="bg-[#fffdfa] border border-[#e8d5c8] p-5 rounded-2xl text-left hover:border-[#8c4351] transition paper-shadow group"
+                                            >
+                                                <div className="text-3xl mb-2 group-hover:scale-110 transition transform">💖</div>
+                                                <h3 className="font-bold text-[#8c4351] mb-1">Tangkap Hati</h3>
+                                                <p className="text-xs text-[#8c7462]">Kumpulkan poin sebanyak-banyaknya dalam 30 detik!</p>
+                                            </button>
+
+                                            {/* Game 2 Card */}
+                                            <button
+                                                onClick={() => { setActiveGame('quiz'); playSound('pop'); }}
+                                                className="bg-[#fffdfa] border border-[#e8d5c8] p-5 rounded-2xl text-left hover:border-[#8c4351] transition paper-shadow group"
+                                            >
+                                                <div className="text-3xl mb-2 group-hover:scale-110 transition transform">🧩</div>
+                                                <h3 className="font-bold text-[#8c4351] mb-1">Seberapa Kenal?</h3>
+                                                <p className="text-xs text-[#8c7462]">4 pertanyaan santai & seru. Pilihan salah akan menghilang!</p>
+                                            </button>
+
+                                            {/* Game 3 Card */}
+                                            <button
+                                                onClick={() => { setActiveGame('surprise'); playSound('pop'); }}
+                                                className="bg-[#fffdfa] border border-[#e8d5c8] p-5 rounded-2xl text-left hover:border-[#8c4351] transition paper-shadow group"
+                                            >
+                                                <div className="text-3xl mb-2 group-hover:scale-110 transition transform">🎁</div>
+                                                <h3 className="font-bold text-[#8c4351] mb-1">Pilih Kejutan</h3>
+                                                <p className="text-xs text-[#8c7462]">Buka amplop misterius untuk pesan motivasi hangat.</p>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-[#fffdfa] border-2 border-[#e8d5c8] rounded-2xl p-6 paper-shadow relative">
+                                            <button
+                                                onClick={() => { setActiveGame(null); playSound('pop'); }}
+                                                className="mb-4 text-xs font-bold text-[#8c4351] hover:underline flex items-center gap-1"
+                                            >
+                                                ← Kembali ke Pilihan Game
+                                            </button>
+
+                                            {/* GAME 1: TANGKAP HATI */}
+                                            {activeGame === 'catch' && (
+                                                <div>
+                                                    <h3 className="font-serif-title text-xl font-bold text-[#8c4351] mb-1 text-center">
+                                                        Game: Tangkap Hati 💖
+                                                    </h3>
+                                                    <p className="text-xs text-center text-[#8c7462] mb-4">
+                                                        Klik hati yang muncul secepat mungkin sebelum waktu habis!
+                                                    </p>
+
+                                                    {!isGameRunning && !gameEnded && (
+                                                        <div className="text-center py-8">
+                                                            <button
+                                                                onClick={startCatchGame}
+                                                                className="bg-[#8c4351] text-white px-6 py-2.5 rounded-xl font-bold shadow hover:bg-[#72323f] transition"
+                                                            >
+                                                                Mulai Permainan 🚀
+                                                            </button>
+                                                        </div>
+                                                    )}
+
+                                                    {isGameRunning && (
+                                                        <div>
+                                                            <div className="flex justify-between items-center bg-[#f7ebe1] px-4 py-2 rounded-xl text-xs font-bold mb-4">
+                                                                <span>⏱ Waktu: {gameTime} detik</span>
+                                                                <span>❤️ Skor: {gameScore}</span>
+                                                            </div>
+
+                                                            <div className="h-64 bg-[#faf2eb] border border-[#e8d5c8] rounded-xl relative overflow-hidden cursor-crosshair">
+                                                                <button
+                                                                    onClick={handleCatchHeart}
+                                                                    style={{
+                                                                        position: 'absolute',
+                                                                        top: `${heartPosition.top}%`,
+                                                                        left: `${heartPosition.left}%`,
+                                                                        transform: 'translate(-50%, -50%)'
+                                                                    }}
+                                                                    className="text-3xl hover:scale-125 transition transform active:scale-95"
+                                                                >
+                                                                    💖
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {gameEnded && (
+                                                        <div className="text-center py-6">
+                                                            <div className="text-4xl mb-2">🎉</div>
+                                                            <h4 className="font-bold text-lg text-[#8c4351] mb-2">Waktu Habis!</h4>
+                                                            <p className="text-sm text-[#5c4738] mb-4">
+                                                                Kamu berhasil mengumpulkan <span className="font-bold text-[#8c4351]">{gameScore}</span> hati! Semoga ada banyak kebahagiaan yang ikut terkumpul hari ini ♡
+                                                            </p>
+                                                            <button
+                                                                onClick={startCatchGame}
+                                                                className="bg-[#8c4351] text-white px-5 py-2 rounded-xl font-bold text-xs shadow hover:bg-[#72323f] transition"
+                                                            >
+                                                                Main Lagi 🔄
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* GAME 2: SEBERAPA KENAL KAMU? */}
+                                            {activeGame === 'quiz' && (
+                                                <div>
+                                                    <h3 className="font-serif-title text-xl font-bold text-[#8c4351] mb-1 text-center">
+                                                        Seberapa Kenal Kamu? 🧩
+                                                    </h3>
+                                                    <p className="text-xs text-center text-[#8c7462] mb-4">
+                                                        Pilihlah jawaban yang paling pas. Pilihan yang salah akan bertahap mengecil & menghilang!
+                                                    </p>
+
+                                                    {!quizCompleted ? (
+                                                        <div>
+                                                            <div className="flex justify-between items-center text-xs font-bold text-[#8c7462] mb-3">
+                                                                <span>Pertanyaan {quizIndex + 1} dari {CONFIG.quizQuestions.length}</span>
+                                                                <span>Step {quizIndex + 1}/4</span>
+                                                            </div>
+
+                                                            <div className="bg-[#f7ebe1] p-4 rounded-xl mb-4 font-semibold text-sm text-[#5c4738]">
+                                                                {CONFIG.quizQuestions[quizIndex].question}
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                {CONFIG.quizQuestions[quizIndex].options.map((opt, i) => {
+                                                                    const isWrong = selectedWrongOptions.includes(opt.text);
+                                                                    return (
+                                                                        <button
+                                                                            key={i}
+                                                                            onClick={() => handleQuizOptionClick(opt)}
+                                                                            className={`w-full p-3 rounded-xl border text-left text-xs font-semibold ${
+                                                                                isWrong ? 'option-wrong' : 'option-normal bg-white border-[#e8d5c8] hover:border-[#8c4351] text-[#5c4738]'
+                                                                            }`}
+                                                                        >
+                                                                            {opt.text}
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-center py-6">
+                                                            <div className="text-4xl mb-2">🥳</div>
+                                                            <h4 className="font-bold text-lg text-[#8c4351] mb-2">Kuis Selesai!</h4>
+                                                            <p className="text-sm text-[#5c4738] mb-4">
+                                                                Hebat! Kamu berhasil menjawab semua pertanyaan kuis dengan benar! ♡
+                                                            </p>
+                                                            <button
+                                                                onClick={resetQuiz}
+                                                                className="bg-[#8c4351] text-white px-5 py-2 rounded-xl font-bold text-xs shadow hover:bg-[#72323f] transition"
+                                                            >
+                                                                Ulangi Kuis 🔄
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* GAME 3: PILIH KEJUTANMU */}
+                                            {activeGame === 'surprise' && (
+                                                <div>
+                                                    <h3 className="font-serif-title text-xl font-bold text-[#8c4351] mb-1 text-center">
+                                                        Pilih Kejutanmu 🎁
+                                                    </h3>
+                                                    <p className="text-xs text-center text-[#8c7462] mb-6">
+                                                        Pilih salah satu amplop di bawah ini untuk membuka pesan manis.
+                                                    </p>
+
+                                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                                                        {CONFIG.surprises.map((s) => (
+                                                            <button
+                                                                key={s.id}
+                                                                onClick={() => {
+                                                                    setSelectedSurprise(s);
+                                                                    markGamePlayed();
+                                                                    playSound('chime');
+                                                                }}
+                                                                className={`p-4 rounded-xl border transition flex flex-col items-center justify-center gap-2 ${
+                                                                    selectedSurprise?.id === s.id 
+                                                                        ? 'bg-[#f7ebe1] border-[#8c4351] ring-2 ring-[#8c4351]/30' 
+                                                                        : 'bg-white border-[#e8d5c8] hover:border-[#8c4351]'
+                                                                }`}
+                                                            >
+                                                                <span className="text-3xl">{s.icon}</span>
+                                                                <span className="text-xs font-bold text-[#8c4351]">{s.title}</span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+
+                                                    {selectedSurprise && (
+                                                        <div className="bg-[#fcf5ef] border border-[#e2c2b3] p-4 rounded-xl text-center animate-fade-in">
+                                                            <p className="text-xs font-bold text-[#8c4351] mb-1">{selectedSurprise.title}:</p>
+                                                            <p className="text-sm text-[#5c4738] italic">"{selectedSurprise.text}"</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* TAB 3: SUDUT RAHASIA */}
+                            {activeTab === 'rahasia' && (
+                                <div className="flex-1 flex flex-col items-center justify-center">
+                                    {!isSecretUnlocked ? (
+                                        <div className="bg-[#fffdfa] border-2 border-[#e8d5c8] rounded-2xl p-8 max-w-md w-full text-center paper-shadow relative">
+                                            <div className="washi-tape absolute -top-3 left-1/2 -translate-x-1/2 w-32 h-6 rounded-sm"></div>
+                                            <div className="text-5xl mb-4">🔒</div>
+                                            <h2 className="font-serif-title text-xl font-bold text-[#8c4351] mb-2">
+                                                Sudut Rahasia Terkunci
+                                            </h2>
+                                            <p className="text-xs text-[#8c7462] mb-6">
+                                                Untuk membuka tempat ini, kamu perlu menyelesaikan setidaknya 1 game dan membaca Surat Untukmu!
+                                            </p>
+
+                                            <div className="bg-[#faf2eb] p-3 rounded-xl text-xs space-y-1.5 text-left mb-4">
+                                                <div className="flex items-center justify-between">
+                                                    <span>1. Buka & baca Surat Untukmu</span>
+                                                    <span>{hasReadLetter ? "✅" : "❌"}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span>2. Mainkan minimal 1 Game</span>
+                                                    <span>{hasPlayedGame ? "✅" : "❌"}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-[#fffefb] border-2 border-[#8c4351]/30 rounded-2xl p-6 sm:p-8 max-w-lg w-full paper-shadow relative text-center animate-fade-in">
+                                            <div className="washi-tape absolute -top-3 left-1/2 -translate-x-1/2 w-36 h-6 rounded-sm"></div>
+                                            
+                                            <div className="text-4xl mb-2">🏆</div>
+                                            <h2 className="font-serif-title text-2xl font-bold text-[#8c4351] mb-2">
+                                                National Couple Day Special
+                                            </h2>
+
+                                            {/* Certificate Box */}
+                                            <div className="bg-[#fef9f5] border-2 border-dashed border-[#e2c2b3] p-5 rounded-xl my-4 text-center">
+                                                <p className="text-xs uppercase tracking-widest text-[#a38c7a] font-bold mb-1">BEST COUPLE AWARD</p>
+                                                <h3 className="font-handwriting text-3xl font-bold text-[#8c4351] my-2">
+                                                    Teruntuk {CONFIG.recipientName} ♡
+                                                </h3>
+                                                <p className="text-xs text-[#7a6252] leading-relaxed">
+                                                    Diberikan atas kebaikan, senyuman hangat, dan kehadiranmu yang selalu membuat setiap hari terasa jauh lebih bermakna.
+                                                </p>
+                                            </div>
+
+                                            <p className="text-sm text-[#5c4738] leading-relaxed mb-6 whitespace-pre-line text-left">
+                                                {CONFIG.secretMessage}
+                                            </p>
+
+                                            <button
+                                                onClick={() => {
+                                                    triggerConfetti();
+                                                    playSound('win');
+                                                }}
+                                                className="bg-[#8c4351] hover:bg-[#72323f] text-white font-bold py-2.5 px-6 rounded-xl shadow transition active:scale-95 text-xs mb-4"
+                                            >
+                                                Rayakan & Rayakan ✨
+                                            </button>
+
+                                            <div>
+                                                <button
+                                                    onClick={resetAllProgress}
+                                                    className="text-xs text-[#a38c7a] hover:text-[#8c4351] underline"
+                                                >
+                                                    Reset Ulang Seluruh Progres
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                        </div>
+                    )}
+
+                    {/* Footer */}
+                    <footer className="text-center py-4 text-xs text-[#a38c7a] border-t border-[#f0dcd0]/50 mt-auto">
+                        Made with ♡ for National Couple Day
+                    </footer>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
